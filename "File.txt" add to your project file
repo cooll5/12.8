@@ -1,0 +1,320 @@
+#include<iostream>
+#include<iomanip>
+#include<cstring>
+#include<string>
+#include<time.h>
+#include<conio.h>
+#include<fstream>
+using namespace std;
+
+struct Data
+{
+	string name;
+	char type;
+	float denomination;
+	int  count;
+};
+struct List
+{
+	List* prev;
+	Data info;
+	List* next;
+};
+List* head = NULL;
+List* tail = NULL;
+int N;
+void get_rand()
+{
+	char ch[] = { 'R','C' };
+	List* temp = new List;
+	temp->next = NULL;
+	temp->info.name = "RT-" + to_string(rand() % 100) + "-" + to_string(rand() % 100);
+	temp->info.type = ch[rand() % 2];
+	temp->info.denomination = rand() % (9999 - 100 + 1) - 100;
+	temp->info.count = rand() % (100 - 1 + 1) - 1;
+	if (head == NULL)
+	{
+		temp->prev = NULL;
+		head = tail = temp;
+	}
+	else
+	{
+		tail->next = temp;
+		temp->prev = tail;
+		tail = temp;
+	}
+}
+void show()
+{
+	List* temp = head;
+	cout << "\t\t" << " ___________________________________\n";
+	cout << "\t\t" << "| LIST OF COMPONENTS                |\n";
+	cout << "\t\t" << "|___________________________________|\n";
+	cout << "\t\t" << "|Name" << setw(12) << "|Type" << setw(7) << "|Denomination" << setw(7) << "|Count|\n";
+	cout << "\t\t" << "|___________|____|____________|_____|\n";
+	while (temp != NULL)
+	{
+		cout << "\t\t|"
+			<< setw(11) << temp->info.name << "|"
+			<< setw(4) << temp->info.type << "|"
+			<< setw(12) << temp->info.denomination << "|"
+			<< setw(5) << temp->info.count << "|\n";
+		cout << "\t\t" << "|___________|____|____________|_____|\n";
+		temp = temp->next;
+	}
+	cout << "\t\t" << "| Note: R-resistor; C-capacitor     |\n";
+	cout << "\t\t" << "|___________________________________|\n";
+}
+void show_reverse()
+{
+	List* temp = tail;
+	cout << "\t\t" << " ___________________________________\n";
+	cout << "\t\t" << "| LIST OF COMPONENTS                |\n";
+	cout << "\t\t" << "|___________________________________|\n";
+	cout << "\t\t" << "|Name" << setw(12) << "|Type" << setw(7) << "|Denomination" << setw(7) << "|Count|\n";
+	cout << "\t\t" << "|___________|____|____________|_____|\n";
+	while (temp != NULL)
+	{
+		cout << "\t\t|"
+			<< setw(11) << temp->info.name << "|"
+			<< setw(4) << temp->info.type << "|"
+			<< setw(12) << temp->info.denomination << "|"
+			<< setw(5) << temp->info.count << "|\n";
+		cout << "\t\t" << "|___________|____|____________|_____|\n";
+		temp = temp->prev;
+	}
+	cout << "\t\t" << "| Note: R-resistor; C-capacitor     |\n";
+	cout << "\t\t" << "|___________________________________|\n";
+}
+void menu()
+{
+	cout << "1 get rand struct;" << endl;
+	cout << "2  delete some elements of list;" << endl;
+	cout << "3 to add some elements of list;" << endl;
+	cout << "4 to read file;" << endl;
+	cout << "5 to fill file;" << endl;
+	cout << "6 to print;" << endl;
+	cout << "7 to print reverse;" << endl;
+	cout << "8 to clean the console;" << endl;
+	cout << "9 to exit from the cycle;" << endl;
+}
+int erase(int el)
+{
+	List* temp_pos = head;
+	if (el == 0)
+	{
+		head = head->next;
+		head->next->prev = NULL;
+		delete temp_pos;
+	}
+	else
+	{
+		for (int i = 0; i < el - 1; i++) //Перествляємо покажчик до елемента який нам потрібно видалити-1
+		{
+			temp_pos = temp_pos->next;
+		}
+		List* temp_del = temp_pos->next; //Створюємо новий покажчик який вказує на елемент який потрібно видалити
+		if (temp_del->next == NULL)      //Перевіряємо чи цей покажчик не є останнім елементом списку,
+		{
+			temp_pos->next = NULL;                        //якщо так, то в попередній елемент від видалюваного записуємо NULL тим самим показуючи що це кінець списку 
+			tail = temp_pos;
+		}
+		else                         //Інакше Записуємо в попередній елемент від видалюваного адресу наступного елемента після видалюваного
+		{
+			temp_pos->next = temp_del->next;
+			temp_del->next->prev = temp_pos;
+
+		}
+		delete temp_del;                 //видаляяємо портібний нам елемент
+	}
+	N = N - 1;
+	return N;
+}
+int add(int el, Data tt)
+{
+	List* temp = new List;
+	List* temp_pos = head;
+	if (el == 0)
+	{
+		temp->next = head;
+		head = temp;
+	}
+	else
+	{
+		for (int i = 0; i < el - 1; i++)
+		{
+			temp_pos = temp_pos->next;
+		}
+		if (temp_pos == tail)
+		{
+			tail->next = temp;
+			temp->prev = tail;
+			temp->next = NULL;
+			tail = temp;
+		}
+		else
+		{
+			temp->next = temp_pos->next;
+			temp_pos->next = temp;
+			temp->next->prev = temp;
+			temp->prev = temp_pos;
+		}
+	}
+	temp->info = tt;
+	N = N + 1;
+	return N;
+}
+void fill_file()
+{
+	List* temp = head;
+	string path = "File.txt";
+	ofstream fout;
+	fout.open(path);//, ofstream::app);
+	if (!fout.is_open())
+	{
+		cout << "Error of opening file!" << endl;
+	}
+	else
+	{
+		cout << "File completed successfully\nCheck your file\n";
+		while (temp != NULL)
+		{
+			fout << setw(11) << temp->info.name
+				<< setw(4) << temp->info.type
+				<< setw(12) << temp->info.denomination
+				<< setw(5) << temp->info.count << endl;
+			temp = temp->next;
+			N++;
+		}
+	}
+	fout.close();
+}
+void read_file()
+{
+	List* temp = head;
+	ifstream fin;
+	fin.open("File.txt");
+	if (!fin.is_open())
+	{
+		cout << "Error of opening file!" << endl;
+	}
+	else
+	{
+		cout << "File is opened!" << endl;
+		while (!fin.eof() && temp != NULL)
+		{
+			fin >> temp->info.name
+				>> temp->info.type
+				>> temp->info.denomination
+				>> temp->info.count;
+			temp = temp->next;
+			N++;
+		}
+		show();
+	}
+	fin.close();
+}
+void cycle()
+{
+	while (1)
+	{
+		int t;
+		cin >> t;
+		switch (t)
+		{
+		case 1:
+		{
+			for (int i = 0; i < N; i++)
+			{
+				get_rand();
+			}
+			show();
+			break;
+		}
+		case 2:
+		{
+			int el;
+			cout << "Enter sequence number: ";
+			cin >> el;
+			if (el <= N)
+			{
+				erase(el);
+				show();
+			}
+			else
+			{
+				cout << "Error!\n";
+				do
+				{
+					cout << "Enter more small sequence number: ";
+					cin >> el;
+				} while (el > N);
+				erase(el);
+				show();
+			}
+			break;
+		}
+		case 3:
+		{
+			int el;
+			Data tt;
+			cout << "Enter position of adding element: ";
+			cin >> el;
+			cout << '\n';
+			cout << "Enter adding data: ";
+			cin >> tt.name >> tt.type >> tt.denomination >> tt.count;
+			add(el, tt);
+			show();
+			break;
+		}
+		case 4:
+		{
+			read_file();
+			break;
+		}
+		case 5:
+		{
+			fill_file();
+			break;
+		}
+		case 6:
+		{
+			show();
+			break;
+		}
+		case 7:
+		{
+			show_reverse();
+			break;
+		}
+		case 8:
+		{
+			cout << "Press space for clean the console";
+			char c;
+			c = _getch();
+			if (c == 32)
+			{
+				system("cls");
+			}
+			menu();
+			cout << "Count of elements:" << N << endl;
+			break;
+		}
+		case 9:
+		{
+			exit(0);
+			break;
+		}
+		}
+	}
+}
+int main()
+{
+	srand(time(NULL));
+	cout << "Enteer count of elements: ";
+	cin >> N;
+	List* temp = new List;
+	menu();
+	cycle();
+	return 0;
+}
